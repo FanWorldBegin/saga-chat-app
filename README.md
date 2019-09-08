@@ -149,7 +149,7 @@ default:
 export default  messages
 ```
 #### user.js
-``````javascript
+```javascript
 import * as types from '../constants/ActionTypes.js'
 const users = (state = [], action) => {
   switch (action.type) {
@@ -165,4 +165,184 @@ const users = (state = [], action) => {
 }
 }
 export default users;
+```
+
+## 5.AddMessage.js 
+component 下的组件只展示数据没有与redux 相连
+```javascript
+//input filed dispach
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import { addMessage } from '../action'
+
+const AddMessage = (props) => {
+  let input;
+  return (
+    <section className="new-message">
+      <input type="text"
+        onKeyPress={(e) => {
+          if(e.key == 'Enter') {
+            props.dispach(input.value, "Me")
+            input.value=""
+          }
+        }}
+        type='text'
+        ref={(node) => {
+          input = node
+        }}
+      />
+    </section>
+  )
+}
+
+
+AddMessage.PropTypes = {
+  dispach: PropTypes.func.isRequired
+}
+
+const mapDispatchToProps = dispach => ({
+  dispach: (messages, author) => {
+    dispach(addMessage(messages, author))
+  }
+})
+
+const AddMessage_connect = connect(() => ({}), mapDispatchToProps)(AddMessage)
+export default AddMessage_connect
+
+
+```
+
+## 6. component/Message 
+
+### Message.js
+```javascript
+//input filed dispach
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+const Messages = ({messages, author}) => {
+  return (
+    <p>
+      <li> {author}: </li> {messages}
+    </p>
+  )
+}
+Messages.PropTypes = {
+  messages: PropTypes.string.isRequired,
+   author: PropTypes.string.isRequired,
+}
+export default Messages
+//render by MessageList component
+```
+### MessaageList.js
+```javascript
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import Message from './Messags.js'
+const MessageList = {{ messages }} => {
+  <section id="message-list">
+    <ul>
+      {messages.map(message => (
+        <Messages
+          key={message.id}
+          {...message}
+        />
+      ))}
+    </ul>
+  </section>
+}
+MessageList.PropTYpes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,isRequired,
+      message: PropTypes.string.isRequired,
+      message: PropTypes.string.isRequired
+    }).isRequired
+  ).isRequired
+}
+export default MessageList;
+```
+
+## 7. component/sidebar
+```javascript
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+const Sidebar = ({ users }) => (
+  <aside className="siderbar" id ='siderbar'>
+    <ul>
+      { users.map(user => （
+        <li key={user.id}>{user.name}</li>
+      ）)}
+    </ul>
+  </aside>
+)
+Sidebar.ProTypes = {
+  users: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired
+}
+export default Sidebar
+```
+
+## 8. MessageList
+```javascript
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import Messages from './Messags.js'
+import { connect } from 'react-redux'
+const MessageList = ({ messages }) => {
+  console.log(messages);
+  return (
+    <section id="messages-list">
+      <ul>
+        { messages.map(message => (
+          <Messages
+            key={message.id}
+            {...message}
+          />
+        ))}
+      </ul>
+    </section>
+  )
+    console.log("Messages: " + Messages);
+}
+MessageList.PropTypes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      messages: PropTypes.string.isRequired,
+      author: PropTypes.string.isRequired
+    }).isRequired
+  ).isRequired
+}
+const MessageList_connect = connect(state => ({
+  messages: state.messages, //reducer 的名字
+}), {})(MessageList)
+export default  MessageList_connect;
+```
+## 9. 将自己加入聊天列表
+修改index.js,store 在开始的时候就将 Me 加入列表。
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerServiceWorker from './registerServiceWorker';
+import {addUser} from './action/index.js'
+import { Provider } from "react-redux"
+import { createStore } from 'redux'
+import chat from './reducers'
+const store = createStore(chat)
+//将自己显示在联系人列表
+store.dispatch(addUser('Me'))
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+  , document.getElementById('root'));
+registerServiceWorker();
+
 ```
